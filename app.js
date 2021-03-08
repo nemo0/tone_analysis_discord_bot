@@ -1,5 +1,4 @@
 const Discord = require('discord.js');
-const Twit = require('twit');
 require('dotenv').config();
 
 // Tone Analyzer Credentials
@@ -39,26 +38,35 @@ client.login(process.env.BOT_TOKEN);
 client.on('ready', () => console.log('The Bot is ready!'));
 
 client.on('message', (message) => {
-  message.channel.messages.fetch({ limit: 20 }).then((messages) => {
-    let chatsList = [];
-    messages.forEach((msg) => {
-      let chatObj = {};
-      chatObj['user'] = msg.author.username;
-      chatObj['text'] = msg.content;
-      chatsList.push(chatObj);
-    });
-    // Conversation Analysis
-    const toneChatParams = {
-      utterances: chatsList,
-    };
-    toneAnalyzer
-      .toneChat(toneChatParams)
-      .then((utteranceAnalyses) => {
-        console.log(JSON.stringify(utteranceAnalyses, null, 2));
-      })
-      .catch((err) => {
-        console.log('error:', err);
+  if (message.content == '?tone') {
+    message.channel.messages.fetch({ limit: 50 }).then((messages) => {
+      let chatsList = [];
+      let tonesList = [];
+      messages.forEach((msg) => {
+        let chatObj = {};
+        chatObj['user'] = msg.author.username;
+        chatObj['text'] = msg.content;
+        chatsList.push(chatObj);
       });
-    // Conversation Analysis
-  });
+      // Conversation Analysis
+      const toneChatParams = {
+        utterances: chatsList,
+      };
+      toneAnalyzer
+        .toneChat(toneChatParams)
+        .then((utteranceAnalyses) => {
+          utteranceAnalyses.result.utterances_tone.forEach((tone) => {
+            if (tone.tones[0] !== undefined) {
+              console.log(tone.tones[0].tone_name);
+              message.channel.send(tone.tones[0].tone_name);
+              tonesList.push(tone.tones[0].tone_name);
+            }
+          });
+        })
+        .catch((err) => {
+          console.log('error:', err);
+        });
+      // Conversation Analysis
+    });
+  }
 });
