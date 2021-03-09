@@ -47,21 +47,17 @@ client.on('message', (message) => {
           chatsList.push(chatObj);
         }
       });
-      console.log(chatsList);
       // Conversation Analysis
       const toneChatParams = {
         utterances: chatsList,
       };
-
       toneAnalyzer
         .toneChat(toneChatParams)
         .then((utteranceAnalyses) => {
           utteranceAnalyses.result.utterances_tone.forEach((tone) => {
-            if (tone.tones[0] !== undefined) {
-              client.channels.cache
-                .get('818508413982081044')
-                .send(`${tone.tones[0].tone_name}`);
-            }
+            client.channels.cache
+              .get('818508413982081044')
+              .send(`${tone.tones[0].tone_name}`);
           });
         })
         .catch((err) => {
