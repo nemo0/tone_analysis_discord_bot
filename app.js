@@ -4,15 +4,13 @@ require('dotenv').config();
 // Tone Analyzer Credentials
 // Tone Analyzer
 const options = {
-  apikey: 'H9vmLmmPYCyOu5gyI5Nz4FNmYmutDzqkSgJPR8gurokI',
+  apikey: process.env.WATSON_API_KEY,
   iam_apikey_description:
     'Auto-generated for key b44da232-c9cb-4b03-b30f-854683a122aa',
   iam_apikey_name: 'Auto-generated service credentials',
   iam_role_crn: 'crn:v1:bluemix:public:iam::::serviceRole:Manager',
-  iam_serviceid_crn:
-    'crn:v1:bluemix:public:iam-identity::a/efb407a2b9a6405da7b6b5aabfcad199::serviceid:ServiceId-0a6d613d-92a7-4278-ac5a-b7595c79f8b7',
-  url:
-    'https://api.us-east.tone-analyzer.watson.cloud.ibm.com/instances/1170c9d4-7847-4fc1-ba4f-672f7ac52c44',
+  iam_serviceid_crn: process.env.WATSON_SERVICE_CRN,
+  url: process.env.WATSON_URL,
 };
 
 const ToneAnalyzerV3 = require('ibm-watson/tone-analyzer/v3');
@@ -38,28 +36,31 @@ client.login(process.env.BOT_TOKEN);
 client.on('ready', () => console.log('The Bot is ready!'));
 
 client.on('message', (message) => {
+  let chatsList = [];
   if (message.content == '?tone') {
-    message.channel.messages.fetch({ limit: 50 }).then((messages) => {
-      let chatsList = [];
-      let tonesList = [];
+    message.channel.messages.fetch().then((messages) => {
       messages.forEach((msg) => {
-        let chatObj = {};
-        chatObj['user'] = msg.author.username;
-        chatObj['text'] = msg.content;
-        chatsList.push(chatObj);
+        if (msg.content !== '?tone') {
+          let chatObj = {};
+          chatObj['user'] = msg.author.username;
+          chatObj['text'] = msg.content;
+          chatsList.push(chatObj);
+        }
       });
+      console.log(chatsList);
       // Conversation Analysis
       const toneChatParams = {
         utterances: chatsList,
       };
+
       toneAnalyzer
         .toneChat(toneChatParams)
         .then((utteranceAnalyses) => {
           utteranceAnalyses.result.utterances_tone.forEach((tone) => {
             if (tone.tones[0] !== undefined) {
-              console.log(tone.tones[0].tone_name);
-              message.channel.send(tone.tones[0].tone_name);
-              tonesList.push(tone.tones[0].tone_name);
+              client.channels.cache
+                .get('818508413982081044')
+                .send(`${tone.tones[0].tone_name}`);
             }
           });
         })
