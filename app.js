@@ -5,10 +5,6 @@ require('dotenv').config();
 // Tone Analyzer
 const options = {
   apikey: process.env.WATSON_API_KEY,
-  iam_apikey_description:
-    'Auto-generated for key b44da232-c9cb-4b03-b30f-854683a122aa',
-  iam_apikey_name: 'Auto-generated service credentials',
-  iam_role_crn: 'crn:v1:bluemix:public:iam::::serviceRole:Manager',
   iam_serviceid_crn: process.env.WATSON_SERVICE_CRN,
   url: process.env.WATSON_URL,
 };
